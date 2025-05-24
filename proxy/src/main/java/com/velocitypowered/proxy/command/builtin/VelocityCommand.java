@@ -82,7 +82,7 @@ public final class VelocityCommand {
         .executes(new Heap())
         .build();
     final LiteralCommandNode<CommandSource> info = BrigadierCommand.literalArgumentBuilder("info")
-        .requires(source -> source.getPermissionValue("velocity.command.info") != Tristate.FALSE)
+        .requires(source -> source.getPermissionValue("velocity.command.info") == Tristate.TRUE)
         .executes(new Info(server))
         .build();
     final LiteralCommandNode<CommandSource> plugins = BrigadierCommand
@@ -174,10 +174,10 @@ public final class VelocityCommand {
       if (version.getName().equals("Velocity")) {
         final TextComponent embellishment = Component.text()
             .append(Component.text()
-                .content("velocitypowered.com")
+                .content("PaperMC")
                 .color(NamedTextColor.GREEN)
                 .clickEvent(
-                    ClickEvent.openUrl("https://velocitypowered.com"))
+                    ClickEvent.openUrl("https://papermc.io/software/velocity"))
                 .build())
             .append(Component.text(" - "))
             .append(Component.text()

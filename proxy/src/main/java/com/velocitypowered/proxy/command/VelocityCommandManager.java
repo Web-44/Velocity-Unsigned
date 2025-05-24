@@ -218,13 +218,14 @@ public class VelocityCommandManager implements CommandManager {
    *
    * @param source  the source to execute the command for
    * @param cmdLine the command to execute
+   * @param invocationInfo the invocation info
    * @return the {@link CompletableFuture} of the event
    */
   public CompletableFuture<CommandExecuteEvent> callCommandEvent(final CommandSource source,
-      final String cmdLine) {
+      final String cmdLine, final CommandExecuteEvent.InvocationInfo invocationInfo) {
     Preconditions.checkNotNull(source, "source");
     Preconditions.checkNotNull(cmdLine, "cmdLine");
-    return eventManager.fire(new CommandExecuteEvent(source, cmdLine));
+    return eventManager.fire(new CommandExecuteEvent(source, cmdLine, invocationInfo));
   }
 
   private boolean executeImmediately0(final CommandSource source, final ParseResults<CommandSource> parsed) {
@@ -266,7 +267,12 @@ public class VelocityCommandManager implements CommandManager {
     Preconditions.checkNotNull(source, "source");
     Preconditions.checkNotNull(cmdLine, "cmdLine");
 
-    return callCommandEvent(source, cmdLine).thenComposeAsync(event -> {
+    CommandExecuteEvent.InvocationInfo invocationInfo = new CommandExecuteEvent.InvocationInfo(
+                    CommandExecuteEvent.SignedState.UNSUPPORTED,
+                    CommandExecuteEvent.Source.API
+    );
+
+    return callCommandEvent(source, cmdLine, invocationInfo).thenComposeAsync(event -> {
       CommandExecuteEvent.CommandResult commandResult = event.getResult();
       if (commandResult.isForwardToServer() || !commandResult.isAllowed()) {
         return CompletableFuture.completedFuture(false);
@@ -294,27 +300,14 @@ public class VelocityCommandManager implements CommandManager {
     );
   }
 
-  /**
-   * Returns suggestions to fill in the given command.
-   *
-   * @param source  the source to execute the command for
-   * @param cmdLine the partially completed command
-   * @return a {@link CompletableFuture} eventually completed with a {@link List}, possibly empty
-   */
+  @Override
   public CompletableFuture<List<String>> offerSuggestions(final CommandSource source,
       final String cmdLine) {
     return offerBrigadierSuggestions(source, cmdLine)
         .thenApply(suggestions -> Lists.transform(suggestions.getList(), Suggestion::getText));
   }
 
-  /**
-   * Returns suggestions to fill in the given command.
-   *
-   * @param source  the source to execute the command for
-   * @param cmdLine the partially completed command
-   * @return a {@link CompletableFuture} eventually completed with {@link Suggestions}, possibly
-   *         empty
-   */
+  @Override
   public CompletableFuture<Suggestions> offerBrigadierSuggestions(
       final CommandSource source, final String cmdLine) {
     Preconditions.checkNotNull(source, "source");
